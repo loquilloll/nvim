@@ -1,213 +1,140 @@
-" ~/.config/nvim/init.vim
+"vundle
+set nocompatible
+filetype off
 
-" set plugin base dir
-let s:editor_root=expand("~/.nvim")
+set rtp+=~/.vim/bundle/Vundle.vim
+call vundle#begin()
 
-" ========================================================== "
-"                     VIM SETTINGS                           "
-" ========================================================== "
+"kivy kv file syntax highlight
+Plugin 'farfanoide/vim-kivy'
+
+Plugin 'VundleVim/Vundle.vim'
+"git interface
+Plugin 'tpope/vim-fugitive'
+"filesystem
+Plugin 'scrooloose/nerdtree'
+Plugin 'jistr/vim-nerdtree-tabs'
+Plugin 'kien/ctrlp.vim' 
+
+"html
+"  isnowfy only compatible with python not python3
+Plugin 'isnowfy/python-vim-instant-markdown'
+Plugin 'jtratner/vim-flavored-markdown'
+Plugin 'suan/vim-instant-markdown'
+Plugin 'nelstrom/vim-markdown-preview'
+"python sytax checker
+Plugin 'nvie/vim-flake8'
+Plugin 'vim-scripts/Pydiction'
+Plugin 'vim-scripts/indentpython.vim'
+Plugin 'scrooloose/syntastic'
+
+"auto-completion stuff
+"Plugin 'klen/python-mode'
+Plugin 'Valloric/YouCompleteMe'
+Plugin 'klen/rope-vim'
+"Plugin 'davidhalter/jedi-vim'
+Plugin 'ervandew/supertab'
+""code folding
+Plugin 'tmhedberg/SimpylFold'
+
+"Colors!!!
+Plugin 'altercation/vim-colors-solarized'
+Plugin 'jnurmine/Zenburn'
+Plugin 'powerline/powerline'
+call vundle#end()
+
+filetype plugin indent on    " enables filetype detection
+let g:SimpylFold_docstring_preview = 1
+
+let g:pydiction_location = '/home/alvins/.vim/bundle/Pydiction/complete-dict'
+
+"autocomplete
+let g:ycm_autoclose_preview_window_after_completion=1
+
+"custom keys
+let mapleader=" "
+map <leader>g  :YcmCompleter GoToDefinitionElseDeclaration<CR>
 "
-set relativenumber  " Relative line numbers rock
+call togglebg#map("<F5>")
+"colorscheme zenburn
+"set guifont=Monaco:h14
 
-set ruler           " Show the line and column number of the cursor position,
-                    " separated by a comma.
+let NERDTreeIgnore=['\.pyc$', '\~$'] "ignore files in NERDTree
 
-set background=dark " When set to "dark", Vim will try to use colors that look good on dark backdrop
+"I don't like swap files
+set noswapfile
 
-set shiftwidth=4    " Number of spaces to use for each step of (auto)indent.
+"turn on numbering
+set nu
 
-set expandtab       " Use the appropriate number of spaces to insert a <Tab>.
-                    " Spaces are used in indents with the '>' and '<' commands
-                    " and when 'autoindent' is on. To insert a real tab when
-                    " 'expandtab' is on, use CTRL-V <Tab>.
+"python with virtualenv support
+py3 << EOF
+import os
+import sys
+if 'VIRTUAL_ENV' in os.environ:
+  project_base_dir = os.environ['VIRTUAL_ENV']
+  activate_this = os.path.join(project_base_dir, 'bin/activate_this.py')
+  exec(compile(open(activate_this, "rb").read(), activate_this, 'exec'), dict(__file__=activate_this))
+EOF
 
-set smarttab        " When on, a <Tab> in front of a line inserts blanks
-                    " according to 'shiftwidth'. 'tabstop' is used in other
-                    " places. A <BS> will delete a 'shiftwidth' worth of space
-                    " at the start of the line.
+"it would be nice to set tag files by the active virtualenv here
+":set tags=~/mytags "tags for ctags and taglist
+"omnicomplete
+autocmd FileType python set omnifunc=pythoncomplete#Complete
 
-set incsearch       " While typing a search command, show immediately where the
-                    " so far typed pattern matches.
+"------------Start Python PEP 8 stuff----------------
+" Number of spaces that a pre-existing tab is equal to.
+au BufRead,BufNewFile *py,*pyw,*.c,*.h set tabstop=4
 
-set autoindent      " Copy indent from current line when starting a new line
+"spaces for indents
+au BufRead,BufNewFile *.py,*pyw set shiftwidth=4
+au BufRead,BufNewFile *.py,*.pyw set expandtab
+au BufRead,BufNewFile *.py set softtabstop=4
 
-" auto detect filetype
-filetype plugin on
+" Use the below highlight group when displaying bad whitespace is desired.
+highlight BadWhitespace ctermbg=red guibg=red
 
-" allow easy insertion of one character with spacebar
-nmap <Space> i_<Esc>r
+" Display tabs at the beginning of a line in Python mode as bad.
+au BufRead,BufNewFile *.py,*.pyw match BadWhitespace /^\t\+/
+" Make trailing whitespace be flagged as bad.
+au BufRead,BufNewFile *.py,*.pyw,*.c,*.h match BadWhitespace /\s\+$/
 
-" normal esc from terminal window
-tnoremap <Esc> <C-\><C-n>
+" Wrap text after a certain number of characters
+au BufRead,BufNewFile *.py,*.pyw, set textwidth=100
 
-" fast find/replace word under cursor
-nnoremap <Leader>s :%s/\<<C-r><C-w>\>//g<Left><Left>
+" Use UNIX (\n) line endings.
+au BufNewFile *.py,*.pyw,*.c,*.h set fileformat=unix
 
-" fast escape
-inoremap jj <ESC>
-imap jw <ESC>
-imap jk <ESC>
+" Set the default file encoding to UTF-8:
+set encoding=utf-8
 
-" syntax highlight
+" For full syntax highlighting:
+let python_highlight_all=1
 syntax on
 
-" remap arrow keys to window resize
-if bufwinnr(1)
-    map <Up> <C-W>2-
-    map <Down> <C-W>2+
-    map <Left> <C-W>2<
-    map <Right> <C-W>2>
-endif
+" Keep indentation level from previous line:
+autocmd FileType python set autoindent
 
-" incremental command live feedback
-set inccommand=nosplit
+" make backspaces more powerfull
+set backspace=indent,eol,start
 
-" netrw tree style by default
-let g:netrw_liststyle=3
-let g:netrw_winsize=20
 
-" ========================================================== "
-"                    PLUGIN SETTINGS                         "
-" ========================================================== "
+"Folding based on indentation:
+autocmd FileType python set foldmethod=indent
+"use space to open folds
+nnoremap <space> za 
+"Exit Insert mode quickly
+inoremap jj <ESC>
+"----------Stop python PEP 8 stuff--------------
 
-if empty(glob('~/.config/nvim/autoload/plug.vim'))
-    silent !curl -fLo ~/.config/nvim/autoload/plug.vim --create-dirs
-                \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-    autocmd VimEnter * PlugInstall --sync | source ~/.config/nvim/init.vim
-endif
+"js stuff"
+autocmd FileType javascript setlocal shiftwidth=2 tabstop=2
 
-call plug#begin('~/.nvim/plugged')
-Plug 'https://github.com/scrooloose/nerdtree.git'
-Plug 'https://github.com/wgurecky/vimSum.git'
-Plug 'https://github.com/junegunn/vim-easy-align.git'
-Plug 'https://github.com/kien/ctrlp.vim'
-Plug 'https://github.com/terryma/vim-multiple-cursors.git'
-Plug 'https://github.com/SirVer/ultisnips.git'
-Plug 'https://github.com/honza/vim-snippets.git'
-Plug 'https://github.com/vim-scripts/taglist.vim'
-Plug 'https://github.com/tpope/vim-fugitive.git'
-Plug 'https://github.com/tpope/vim-surround.git'
-Plug 'https://github.com/tpope/vim-repeat.git'
-Plug 'https://github.com/vim-airline/vim-airline.git'
-Plug 'https://github.com/tpope/vim-dispatch.git', { 'for': ['cpp', 'c', 'fortran'] }
-Plug 'https://github.com/w0rp/ale.git', {'for': ['cpp', 'c', 'python', 'fortran']}
-Plug 'rdnetto/YCM-Generator', { 'branch': 'stable'}
-Plug 'Rip-Rip/clang_complete', {'for': ['cpp', 'c'] }
-Plug 'lervag/vimtex'
-Plug 'tell-k/vim-autopep8', {'for': 'python' }
-Plug 'roxma/nvim-completion-manager'
-Plug 'mileszs/ack.vim'
-call plug#end()
+"split navigations
+nnoremap <C-J> <C-W><C-J>
+nnoremap <C-K> <C-W><C-K>
+nnoremap <C-L> <C-W><C-L>
+nnoremap <C-H> <C-W><C-H>
 
-" Clang complete settings
-if !empty(glob('/lib/libclang.so'))
-    let g:clang_library_path='/lib/libclang.so'
-elseif !empty(glob('/usr/lib/llvm-4.0/lib/libclang.so'))
-    let g:clang_library_path='/usr/lib/llvm-4.0/lib/libclang.so'
-elseif !empty(glob('/usr/lib/llvm-3.8/lib/libclang.so.1'))
-    let g:clang_library_path='/usr/lib/llvm-3.8/lib/libclang.so.1'
-endif
-let g:clang_complete_auto=0
-let g:clang_complete_select=0
-let g:clang_omnicppcomplete_compliance=0
-let g:clang_make_default_keymappings=0
-
-" Vimtex settings
-" Note; <leader>ll builds and <leader>le shows compile errors
-" Note; install xdotool package for live previews in zathura
-" let g:vimtex_view_method='general'
-let g:vimtex_view_method='zathura'
-
-" Nerdtree settings
-" launch nerdtree on entry if no file is specified
-autocmd StdinReadPre * let s:std_in=1
-autocmd VimEnter * if argc() == 0 && !exists("s:std_in") | NERDTree | endif
-set autochdir                " automatically change directory
-let NERDTreeChDirMode=2
-
-" Easy align settings
-xmap ga <Plug>(EasyAlign)
-nmap ga <Plug>(EasyAlign)
-
-" ctlp settings
-let g:ctrlp_map = '<c-p>'
-let g:ctrlp_cmd = 'CtrlPMixed'
-
-" ultisnips settings (auto integration with deoplete)
-let g:UltiSnipsExpandTrigger="<c-e>"
-
-" Airline settings
-let g:airline#extensions#tabline#enabled = 1
-let g:airline_powerline_fonts = 1
-
-" auto tab complete
-inoremap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Tab>"
-inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
-
-" ale settings
-let g:ale_linters = {
-    \ 'python': ['pylint'],
-    \ 'cpp': ['gcc', 'clangtidy'],
-    \ 'c': ['gcc'],
-    \ 'fortran': ['gcc'],
-    \ }
-let g:ale_lint_on_save = 1
-
-" vim-dispatch settings
-" Run :Make! to launch background async project build.
-" Results are available via :Copen
-" Ensure makeprg is set properly before running
-
-" For project wide search/replace
-" Run :Ack {pattern} [{dir}]
-" :cdo s/foo/bar/gc | update
-if !executable('ack')
-    let g:ackprg = '~/.config/nvim/bin/ack'
-endif
-
-" ========================================================== "
-"                    EXTRA FUNCTIONS                         "
-" ========================================================== "
-
-" show extra whitespace
-highlight ExtraWhitespace ctermbg=red guibg=red
-match ExtraWhitespace /\s\+$/
-autocmd BufWinEnter * match ExtraWhitespace /\s\+$/
-autocmd InsertEnter * match ExtraWhitespace /\s\+\%#\@<!$/
-autocmd InsertLeave * match ExtraWhitespace /\s\+$/
-autocmd BufWinLeave * call clearmatches()
-
-" remove all trailing whitspace and replace tabs with spaces
-function! DelWhitespace()
-    execute ":retab"
-    :%s/\s\+$//g
-endfunction
-command! Unfuck execute DelWhitespace()
-
-" automatically set makeprg (required for large c++ and c projects)
-function! g:BuildInSubDir(buildsubdir)
-    " Sets makeprg base dir
-    let toplevelpath = FindTopLevelProjectDir()
-    let builddir = toplevelpath . a:buildsubdir
-    let makeprgcmd = 'make -C ' . builddir
-    if builddir !=? "//build"
-        let &makeprg=makeprgcmd
-    endif
-endfunction
-
-function! FindTopLevelProjectDir()
-    " Searches for a .git directory upward till root.
-    let isittopdir = finddir('.git')
-    if isittopdir ==? ".git"
-        return getcwd()
-    endif
-    let gitdir = finddir('.git', ';')
-    let gitdirsplit = split(gitdir, '/')
-    let toplevelpath = '/' . join(gitdirsplit[:-2],'/')
-    return toplevelpath
-endfunction
-
-" Do not enable unless you want makeprg auto-set for all filetypes
-" Set in ftplugin files each desired filetype
-" autocmd BufNewFile,BufRead * call g:BuildInSubDir("/build")
-autocmd filetype cpp nnoremap <F4> :w <bar> exec '!g++ '.shellescape('%').' -o '.shellescape('%:r').' && ./'.shellescape('%:r')<CR>
+"Autorun Python with key
+nnoremap <buffer> <F9> :exec '!python3' shellescape(@%, 1)<cr>
